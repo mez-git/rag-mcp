@@ -1,7 +1,7 @@
 import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import { env } from "../config/env.js";
 
-function getClient() {
+export function getClient() {
     return new MultiServerMCPClient({
         mcpServers: {
             github: {
