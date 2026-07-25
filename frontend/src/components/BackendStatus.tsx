@@ -1,33 +1,37 @@
 "use client";
 
-/**
- * This component talks to our Express backend.
- *
- * Flow:
- * 1. Page loads
- * 2. useEffect runs once
- * 3. We call getHealth() → GET http://localhost:4000/health
- * 4. We show loading, then success or error
- */
 import { useEffect, useState } from "react";
 import { getHealth } from "@/lib/health";
 
 export function BackendStatus() {
-  // What we show on screen
-  const [message, setMessage] = useState("Checking backend…");
+  const [label, setLabel] = useState("Checking backend…");
+  const [ok, setOk] = useState(false);
 
-  // Run this once when the component first appears
   useEffect(() => {
     getHealth()
       .then((data) => {
-        // Backend answered OK
-        setMessage(data.message);
+        setOk(true);
+        setLabel(data.message || "API is running");
       })
       .catch(() => {
-        // Backend is down or request failed
-        setMessage("API is not running");
+        setOk(false);
+        setLabel("Backend offline — start npm run dev in /backend");
       });
-  }, []); // [] = run only once
+  }, []);
 
-  return <p>{message}</p>;
+  return (
+    <p
+      className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm ${
+        ok
+          ? "border-[var(--accent)]/30 bg-[var(--accent-soft)] text-[var(--accent)]"
+          : "border-red-200 bg-red-50 text-red-800"
+      }`}
+    >
+      <span
+        className={`h-2 w-2 rounded-sm ${ok ? "bg-[var(--accent)]" : "bg-red-500"}`}
+        aria-hidden
+      />
+      {label}
+    </p>
+  );
 }

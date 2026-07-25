@@ -1,113 +1,51 @@
 # GitHub AI Assistant (RAG + MCP)
 
-Learning project: a production-shaped **monorepo** with a Next.js frontend and an Express backend. The long-term goal is a GitHub assistant using **LangChain**, **OpenAI**, **ChromaDB**, and the **GitHub MCP server**.
+TypeScript monorepo: **Next.js + Tailwind** UI and an **Express + LangChain** API.
 
-## Architecture
+- **RAG:** ingest text → Ollama embeddings → ChromaDB → Groq answers from your docs  
+- **MCP:** GitHub’s official MCP server (Docker) → tool calling (`get_me`) → natural-language answers  
 
-```text
-rag-mcp/
-├── frontend/     # Next.js (TypeScript) — UI only
-└── backend/      # Express (TypeScript) — API, later AI / RAG / MCP
-```
+> Full explanation, architecture, demo script, and interview talking points: **[PROJECT.md](./PROJECT.md)**
 
-| App | Responsibility | Default URL |
-|-----|----------------|-------------|
-| `frontend` | Chat UI, call the API | http://localhost:3000 |
-| `backend` | Business logic, AI, tools, data | http://localhost:4000 |
+---
 
-The browser never holds secrets (OpenAI / GitHub tokens). Those belong on the **backend** only.
+## Quick start
 
-## Frontend structure (kept simple on purpose)
+**Needs:** Node 20+, Docker, Ollama (`nomic-embed-text`), Groq key, GitHub PAT.
 
-```text
-frontend/src/
-├── app/page.tsx                 # Home screen
-├── components/BackendStatus.tsx # Calls /health and shows result
-├── lib/api.ts                   # Axios base URL (port 4000)
-├── lib/health.ts                # getHealth() helper
-└── types/health.ts              # Type for the health JSON
-```
+```powershell
+# Chroma (persistent)
+docker run -d -p 8000:8000 --name chroma -v "${PWD}/backend/chroma-data:/data" chromadb/chroma
 
-**Flow:** `page` → `BackendStatus` → `getHealth` → `api` → backend `/health`
-
-## Backend structure
-
-```text
-backend/src/
-├── server.ts         # Process boot (listen)
-├── app.ts            # Express app (middleware + routes)
-├── config/           # Env & settings
-├── routes/           # URL definitions
-├── controllers/      # HTTP in/out (later)
-├── services/         # Business / AI logic (later)
-├── repositories/     # Chroma / DB access (later)
-├── mcp/              # MCP clients (later)
-├── middleware/       # Errors, logging, validation
-├── schemas/          # Request validation (later)
-├── types/            # Shared types
-├── utils/            # Helpers
-└── errors/           # App error types
-```
-
-## Prerequisites
-
-- Node.js 20+ recommended
-- npm
-
-## Setup
-
-```bash
 # Backend
 cd backend
+copy .env.example .env   # fill GROQ_API_KEY + GITHUB_TOKEN
 npm install
-copy .env.example .env   # Windows; or: cp .env.example .env
-
-# Frontend
-cd ../frontend
-npm install
-copy .env.example .env.local
-```
-
-## Run (two terminals)
-
-```bash
-# Terminal 1 — API
-cd backend
 npm run dev
 
-# Terminal 2 — UI
+# Frontend (new terminal)
 cd frontend
+copy .env.example .env.local
+npm install
 npm run dev
 ```
 
-- Backend health: http://localhost:4000/health  
-- Frontend: http://localhost:3000  
+- UI: http://localhost:3000  
+- API: http://localhost:4000/health  
 
-You should see the backend health message on the home page.
+**Tabs in the UI:** Knowledge (RAG) · GitHub (MCP) · Ingest  
 
-## Scripts
+---
 
-| Location | Command | Purpose |
-|----------|---------|---------|
-| `backend` | `npm run dev` | Express with `tsx watch` |
-| `frontend` | `npm run dev` | Next.js dev server |
-| `frontend` | `npm run build` | Production build |
+## CV one-liner
 
-## Current status
+Built a RAG + MCP GitHub assistant: Next.js/Tailwind frontend, Express/LangChain backend, Chroma + Ollama for retrieval, and GitHub MCP for live tool use—with secrets confined to the server.
 
-- [x] Monorepo layout (`frontend` + `backend`)
-- [x] Express health route + config/env
-- [x] Next.js UI calling `/health` (simple useEffect — no TanStack Query yet)
-- [x] Chat loop (UI ↔ POST `/chat` ↔ echo reply)
-- [ ] Real LLM (OpenAI via LangChain)
-- [ ] RAG (embeddings + ChromaDB)
-- [ ] GitHub MCP integration
+---
 
-## Git
+## Status
 
-- One repo at the **root** (not separate repos per app)
-- Never commit `.env`, `.env.local`, or `node_modules/`
-
-## License
-
-Private / learning project.
+- [x] RAG ingest + chat  
+- [x] GitHub MCP client + tool-calling agent  
+- [x] Tailwind demo UI  
+- [ ] Extra MCP tools / production deploy (see PROJECT.md roadmap)
